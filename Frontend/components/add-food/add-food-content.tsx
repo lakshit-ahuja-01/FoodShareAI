@@ -41,6 +41,7 @@ export function AddFoodContent() {
   const [user, setUser] = useState<User | null>(null);
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<{ quality: string; reason: string } | null>(null);
   const [formData, setFormData] = useState<FormDataType>({
     title: "", 
     category: "",
@@ -53,6 +54,8 @@ export function AddFoodContent() {
     lat: 17.3850,
     lng: 78.4867,
   })
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api";
 
   const filePreviews = useMemo(() => files.map(file => URL.createObjectURL(file)), [files]);
   
@@ -108,8 +111,7 @@ export function AddFoodContent() {
       form.append("expiryTime", expiry.toISOString());
       files.forEach((file) => form.append("images", file));
 
-      // 🟢 POINTING TO BACKEND PORT 4000
-      const res = await fetch(`http://localhost:4000/api/food/add`, {
+      const res = await fetch(`${API_BASE}/food/add`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: form,
@@ -123,8 +125,13 @@ export function AddFoodContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to list food.");
 
-      alert("Food listed successfully!");
-      window.location.href = "/dashboard"; 
+      // Show AI quality result before redirecting
+      if (data.aiQualityReport) {
+        setAiResult({ quality: data.aiQualityReport.quality, reason: data.aiQualityReport.reason });
+        await new Promise((r) => setTimeout(r, 2500)); // Brief pause to show result
+      }
+
+      window.location.href = "/dashboard";
     } catch (err) {
       alert(err instanceof Error ? err.message : "Submission failed");
     } finally {
@@ -143,6 +150,23 @@ export function AddFoodContent() {
           AI-Matching Enabled
         </Badge>
       </div>
+
+      {/* AI Quality Result Banner */}
+      {aiResult && (
+        <div className={`flex items-center gap-3 rounded-xl border p-4 ${
+          aiResult.quality === "FRESH" ? "border-emerald-500/40 bg-emerald-500/10" :
+          aiResult.quality === "MEDIUM" ? "border-amber-500/40 bg-amber-500/10" :
+          "border-red-500/40 bg-red-500/10"
+        }`}>
+          <span className="text-2xl">{aiResult.quality === "FRESH" ? "✅" : aiResult.quality === "MEDIUM" ? "⚠️" : "🚫"}</span>
+          <div>
+            <p className="font-semibold">
+              AI Vision: {aiResult.quality === "FRESH" ? "Food looks fresh!" : aiResult.quality === "MEDIUM" ? "Food shows some aging" : "Spoilage detected"}
+            </p>
+            <p className="text-sm text-muted-foreground">{aiResult.reason}</p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card className="bg-card">

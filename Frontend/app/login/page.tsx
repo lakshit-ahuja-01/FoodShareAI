@@ -16,7 +16,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
-  const handleLogin = async (e: React.FormEvent) => {
+const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
 
@@ -26,20 +26,38 @@ export default function LoginPage() {
     
     // 2. Use the individual 'email' and 'password' variables from your useState
     const res = await fetch(`${API_BASE}/auth/login`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ email, password }),
-  credentials: "include" // optional
-});
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+      credentials: "include"
+    });
 
     const data = await res.json();
 
     if (res.ok) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      alert("Login successful! ✅");
+
+      // 🔑 NGO ROLE CHECK: Redirect to onboarding if profile is incomplete
+      if (data.user.role === "ngo") {
+        try {
+          const profileRes = await fetch(`${API_BASE}/ngos/check-profile`, {
+            headers: { Authorization: `Bearer ${data.token}` },
+          });
+          const profileData = await profileRes.json();
+
+          if (!profileData.hasProfile) {
+            // First-time NGO user — must complete onboarding before dashboard
+            router.replace("/ngo-onboarding");
+            return;
+          }
+        } catch {
+          // If check fails, fall through to dashboard (non-blocking)
+        }
+      }
+
       router.replace("/dashboard");
     } else {
       alert(data.message || "Login failed");

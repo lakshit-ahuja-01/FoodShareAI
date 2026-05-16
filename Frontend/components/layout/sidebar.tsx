@@ -15,19 +15,21 @@ import {
   HelpCircle,
   ChevronLeft,
   ChevronRight,
+  BarChart2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Food Listings", href: "/listings", icon: UtensilsCrossed },
-  { name: "Add Food", href: "/add-food", icon: PlusCircle },
-  { name: "NGOs Nearby", href: "/ngos", icon: Building2 },
-  { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
-  { name: "Schedule", href: "/schedule", icon: Calendar },
-  { name: "Notifications", href: "/notifications", icon: Bell },
-  { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Help & Support", href: "/help", icon: HelpCircle },
+  { name: "Dashboard",      href: "/dashboard",    icon: LayoutDashboard },
+  { name: "Food Listings",  href: "/listings",     icon: UtensilsCrossed },
+  { name: "Add Food",       href: "/add-food",     icon: PlusCircle },
+  { name: "NGOs Nearby",    href: "/ngos",         icon: Building2 },
+  { name: "Leaderboard",    href: "/leaderboard",  icon: Trophy },
+  { name: "Analytics",      href: "/analytics",    icon: BarChart2 },
+  { name: "Schedule",       href: "/schedule",     icon: Calendar },
+  { name: "Notifications",  href: "/notifications",icon: Bell },
+  { name: "Settings",       href: "/settings",     icon: Settings },
+  { name: "Help & Support", href: "/help",         icon: HelpCircle },
 ]
 
 interface SidebarProps {

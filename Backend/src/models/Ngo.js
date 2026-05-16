@@ -7,7 +7,8 @@ const ngoSchema = new mongoose.Schema({
   email: String,
   capacity: Number,
   
-  // 🟢 ADD THIS LINE:
+  // Link to the user account
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   category: String, 
   
   // This is where the script will move the data to:

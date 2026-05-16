@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Bell,
   TrendingUp,
+  AlertTriangle,
 } from "lucide-react"
 
 // --- TYPES ---
@@ -109,6 +110,32 @@ export function DashboardContent() {
   const [ngoCount, setNgoCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
   const [userScore, setUserScore] = useState(0)
+  const [ngoProfileMissing, setNgoProfileMissing] = useState(false)
+
+  // 🔒 NGO GUARD: Check if NGO user has completed profile setup
+  useEffect(() => {
+    const checkNgoProfile = async () => {
+      const storedUser = localStorage.getItem("user")
+      if (!storedUser) return
+      const user = JSON.parse(storedUser)
+      if (user.role !== "ngo") return
+
+      const token = localStorage.getItem("token")
+      if (!token) return
+
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api"
+        const res = await fetch(`${API_BASE}/ngos/check-profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await res.json()
+        if (!data.hasProfile) setNgoProfileMissing(true)
+      } catch {
+        // Silently fail — don't block the dashboard
+      }
+    }
+    checkNgoProfile()
+  }, [])
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -225,6 +252,24 @@ export function DashboardContent() {
 
   return (
     <div className="space-y-6">
+      {/* NGO Profile Incomplete Banner */}
+      {ngoProfileMissing && (
+        <div className="flex items-start gap-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 shadow-sm">
+          <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-amber-600 dark:text-amber-400">NGO Profile Incomplete</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Your NGO profile is missing — the AI cannot match food donations to your organization until you complete your setup.
+            </p>
+          </div>
+          <Link href="/ngo-onboarding">
+            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white shrink-0 gap-1.5">
+              Complete Setup <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

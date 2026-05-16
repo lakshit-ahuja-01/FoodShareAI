@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { toast } from "sonner"
+import { useSocket } from "@/hooks/useSocket"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -56,26 +58,41 @@ export function NotificationsContent() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000/api"
 
-  useEffect(() => {
-    fetchNotifications()
-  }, [])
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token")
       const res = await fetch(`${API_URL}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      if (res.ok) {
-        const data = await res.json()
-        setNotificationList(data)
-      }
+      if (res.ok) setNotificationList(await res.json())
     } catch (err) {
       console.error("Failed to fetch notifications:", err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [API_URL])
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [fetchNotifications])
+
+  // 🔌 Real-time: prepend new notifications instantly when socket event fires
+  useSocket((data) => {
+    const newNotif: Notification = {
+      _id: data.notificationId || String(Date.now()),
+      type: "matched",
+      title: data.title,
+      message: data.message,
+      unread: true,
+      createdAt: new Date().toISOString(),
+    }
+    setNotificationList((prev) => [newNotif, ...prev])
+    toast.success(data.title, {
+      description: data.message,
+      duration: 6000,
+      icon: "🍱",
+    })
+  })
 
   const unreadCount = notificationList.filter((n) => n.unread).length
 

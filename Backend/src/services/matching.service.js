@@ -29,13 +29,13 @@ export async function findBestNGO(food, ngos, nlpBoost = 0) {
     // 🟢 FIX: Flexible Category Match
     // Your manual docs use 'category' (string), but code checks 'categories' (array)
     const ngoCategory = ngo.category?.toLowerCase();
-    const ngoCategories = Array.isArray(ngo.categories) 
+    const ngoCategories = Array.isArray(ngo.categories) && ngo.categories.length > 0
         ? ngo.categories.map(c => c.toLowerCase()) 
-        : [ngoCategory];
+        : (ngoCategory ? [ngoCategory] : []);
 
     // If the food category doesn't match the NGO's specialty, skip it
-    if (foodCat && !ngoCategories.includes(foodCat)) {
-        console.log(`Skipping ${ngo.name}: Category mismatch (${ngoCategory} vs ${foodCat})`);
+    if (foodCat && ngoCategories.length > 0 && !ngoCategories.includes(foodCat)) {
+        console.log(`Skipping ${ngo.name}: Category mismatch (${ngoCategories.join(", ")} vs ${foodCat})`);
         return; 
     }
 

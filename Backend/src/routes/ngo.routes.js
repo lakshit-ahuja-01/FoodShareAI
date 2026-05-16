@@ -1,11 +1,25 @@
 import express from "express";
 import Ngo from "../models/Ngo.js";
+import { protect } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
+// ✅ CHECK IF LOGGED-IN USER HAS AN NGO PROFILE
+// Called by the frontend after login to decide whether to redirect to onboarding
+router.get("/check-profile", protect, async (req, res) => {
+  try {
+    const ngo = await Ngo.findOne({ userId: req.user._id });
+    if (ngo) {
+      return res.json({ hasProfile: true, ngo });
+    }
+    return res.json({ hasProfile: false });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // ✅ ADD A NEW NGO (Registration)
-// ✅ ADD A NEW NGO (Registration)
-router.post("/register", async (req, res) => {
+router.post("/register", protect, async (req, res) => {
   try {
     const { name, lat, lng, category, capacity } = req.body;
 
@@ -15,6 +29,7 @@ router.post("/register", async (req, res) => {
     }
 
     const ngo = new Ngo({
+      userId: req.user._id,
       name,
       category,
       capacity,

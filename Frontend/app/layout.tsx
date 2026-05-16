@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import { ThemeProvider } from "@/components/theme-provider" 
+import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 import './globals.css'
 
 const geistSans = Geist({
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'FoodCycle - AI Food Waste Management',
-  description: 'AI-powered platform to reduce food waste by connecting donors with NGOs',
+  title: 'FoodShareAI - AI-Powered Food Waste Management',
+  description: 'AI-powered platform to reduce food waste by connecting food donors with NGOs',
 }
 
 export default function RootLayout({
@@ -26,7 +27,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* 🟢 Removed manual script tag to prevent hydration conflict */}
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -35,9 +35,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          {/* 🔔 Global Sonner toast provider — required for real-time notifications */}
+          <Toaster richColors position="top-right" />
         </ThemeProvider>
         <Analytics />
       </body>
     </html>
   )
-}
+}

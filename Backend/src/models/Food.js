@@ -38,6 +38,12 @@ const foodSchema = new mongoose.Schema(
       enum: ["FRESH", "MEDIUM", "UNSAFE"],
       default: "FRESH",
     },
+    // Structured report from Gemini Vision analysis
+    aiQualityReport: {
+      reason:     { type: String, default: "" },
+      confidence: { type: Number, default: 0 },
+      analyzedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );
